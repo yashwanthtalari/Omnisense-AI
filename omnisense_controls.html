@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniSense AI — Command Reference</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:   #6366f1;
+      --secondary: #ec4899;
+      --green:     #10b981;
+      --orange:    #f59e0b;
+      --blue:      #38bdf8;
+      --red:       #ef4444;
+      --purple:    #a78bfa;
+      --bg:        #0a0c10;
+      --panel:     #0f1117;
+      --panel2:    #161b26;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Inter', sans-serif;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 48px 24px 80px;
+      background-image: radial-gradient(ellipse at top left, #1a1040 0%, #0a0c10 60%);
+    }
+    .page { max-width: 900px; margin: 0 auto; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 56px; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 20px; padding: 6px 16px; margin-bottom: 24px;
+      font-family: var(--mono); font-size: 11px; color: var(--primary); letter-spacing: 2px;
+    }
+    .header h1 {
+      font-size: 3rem; font-weight: 700; letter-spacing: -1px;
+      background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #38bdf8 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .header p { color: var(--muted); font-size: 1rem; max-width: 580px; margin: 0 auto; }
+
+    /* Section */
+    .section { margin-bottom: 40px; }
+    .section-title {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+      padding-bottom: 12px; margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+
+    /* Cards grid */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .card:hover { border-color: rgba(99,102,241,0.4); transform: translateY(-2px); }
+    .card-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+    .card-title {
+      font-family: var(--mono); font-size: 12px; font-weight: 600;
+      margin-bottom: 4px; color: #fff;
+    }
+    .card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .card-badge {
+      display: inline-block; margin-top: 8px;
+      padding: 2px 8px; border-radius: 10px;
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+    }
+
+    /* Accent borders */
+    .accent-primary  { border-left: 3px solid var(--primary); }
+    .accent-secondary{ border-left: 3px solid var(--secondary); }
+    .accent-green    { border-left: 3px solid var(--green); }
+    .accent-orange   { border-left: 3px solid var(--orange); }
+    .accent-blue     { border-left: 3px solid var(--blue); }
+    .accent-purple   { border-left: 3px solid var(--purple); }
+    .accent-red      { border-left: 3px solid var(--red); }
+
+    /* Badge colors */
+    .b-active   { background: rgba(16,185,129,0.15); color: #10b981; }
+    .b-gesture  { background: rgba(99,102,241,0.15); color: #6366f1; }
+    .b-voice    { background: rgba(236,72,153,0.15);  color: #ec4899; }
+    .b-ui       { background: rgba(56,189,248,0.15);  color: #38bdf8; }
+
+    /* Command table */
+    .cmd-table { width: 100%; border-collapse: collapse; }
+    .cmd-table th {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+      padding: 8px 12px; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .cmd-table td {
+      padding: 10px 12px; font-size: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      vertical-align: top;
+    }
+    .cmd-table tr:hover td { background: var(--panel2); }
+    .cmd-key {
+      font-family: var(--mono); font-size: 11px;
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 5px; padding: 2px 8px; color: #fff;
+      white-space: nowrap; display: inline-block;
+    }
+    .cmd-result { color: var(--muted); }
+    .cmd-type {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px; white-space: nowrap;
+    }
+
+    /* Keyboard shortcuts */
+    .kbd {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--panel2); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 5px; padding: 3px 9px; font-family: var(--mono);
+      font-size: 11px; color: #fff; box-shadow: 0 2px 0 rgba(255,255,255,0.1);
+    }
+
+    /* Voice examples */
+    .voice-example {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(236,72,153,0.06); border: 1px solid rgba(236,72,153,0.15);
+      border-radius: 10px; padding: 12px 16px; margin-bottom: 10px;
+    }
+    .voice-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .voice-cmd  { font-family: var(--mono); font-size: 12px; color: #fff; margin-bottom: 3px; }
+    .voice-resp { font-size: 11px; color: var(--muted); }
+
+    /* Info boxes */
+    .infobox {
+      display: flex; gap: 12px; align-items: flex-start;
+      border-radius: 10px; padding: 14px 18px; margin-top: 16px;
+      font-size: 12px; line-height: 1.6;
+    }
+    .infobox-tip  { background: rgba(16,185,129,0.08);  border: 1px solid rgba(16,185,129,0.2);  }
+    .infobox-warn { background: rgba(245,158,11,0.08);  border: 1px solid rgba(245,158,11,0.2); }
+    .infobox-icon { font-size: 16px; flex-shrink: 0; }
+
+    /* Footer */
+    .footer { text-align: center; margin-top: 64px; color: var(--muted); font-size: 11px; font-family: var(--mono); }
+    .footer span { color: var(--primary); }
+
+    /* Print */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .card { border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">⬡ OMNISENSE AI v4 · COMMAND REFERENCE</div>
+    <h1>OmniSense AI Control Manual</h1>
+    <p>Complete reference for hand gestures, voice commands, and navigating your interaction with your <b>new witty spatial companion</b> — now with full Voice-First capabilities.</p>
+  </div>
+
+  <!-- ── AI PERSONALITY ───────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--purple)"></div>
+      The Core: Wit & Intelligence
+    </div>
+    <div class="cards">
+      <div class="card accent-purple">
+        <span class="card-icon">🧠</span>
+        <div class="card-title">Talk-Back Intelligence</div>
+        <div class="card-desc">OmniSense AI is no longer a dry tool. It’s now a conversational companion that uses Text-to-Speech to reply to your commands with humor, sarcasm, and real-time insights.</div>
+        <span class="card-badge b-active">ACTIVE TTS</span>
+      </div>
+      <div class="card accent-orange">
+        <span class="card-icon">🗞️</span>
+        <div class="card-title">Live News Ticker</div>
+        <div class="card-desc">Every 45 seconds, the AI scans the tech horizon and drops a witty "Reality Check" news headline into your console, keeping you updated while you build.</div>
+        <span class="card-badge b-voice">AUTO-FEED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HAND GESTURES ─────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--green)"></div>
+      Hand Gestures (requires Camera ON)
+    </div>
+    <div class="cards">
+
+      <div class="card accent-green">
+        <span class="card-icon">✋</span>
+        <div class="card-title">OPEN PALM — Superman Pose</div>
+        <div class="card-desc">Hold your hand flat, all five fingers extended toward the camera. Hover near a shape to automatically grab it, then move your hand to move the object in 3D space.</div>
+        <span class="card-badge b-gesture">GRAB &amp; MOVE</span>
+      </div>
+
+      <div class="card accent-red">
+        <span class="card-icon">✊</span>
+        <div class="card-title">FIST — Close Hand</div>
+        <div class="card-desc">Close all fingers into a fist. If currently holding an object, the object is dropped at its current position. If an object is selected but not held, it is deleted from the scene.</div>
+        <span class="card-badge" style="background:rgba(239,68,68,0.15);color:#ef4444">DROP / DELETE</span>
+      </div>
+
+      <div class="card accent-primary">
+        <span class="card-icon">🤏</span>
+        <div class="card-title">PINCH — Thumb + Index</div>
+        <div class="card-desc">Bring your thumb tip and index finger tip close together (pinch). The nearest 3D object within reach is selected and highlighted in the properties panel.</div>
+        <span class="card-badge b-gesture">SELECT NEAREST</span>
+      </div>
+
+      <div class="card accent-blue">
+        <span class="card-icon">👆</span>
+        <div class="card-title">POINT — Index Finger Only</div>
+        <div class="card-desc">Extend only your index finger while keeping the other fingers curled. Points at and selects the nearest object in the direction of your finger.</div>
+        <span class="card-badge b-ui">SELECT NEAREST</span>
+      </div>
+
+      <div class="card accent-purple">
+        <span class="card-icon">✌️</span>
+        <div class="card-title">PEACE — Index &amp; Middle Out</div>
+        <div class="card-desc">Extend your index and middle fingers in a V/peace sign. A random 3D primitive (sphere, box, cone, torus, or cylinder) is instantly spawned at the center of your palm position in the scene.</div>
+        <span class="card-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa">SPAWN SHAPE</span>
+      </div>
+
+      <div class="card accent-orange">
+        <span class="card-icon">🤲</span>
+        <div class="card-title">TWO HANDS — Open Both Palms</div>
+        <div class="card-desc">Both hands open simultaneously near the same object. The shape moves toward the midpoint between your two palms. Moving hands apart / together controls position fluidly with two-hand tracking.</div>
+        <span class="card-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b">TWO-HAND MOVE</span>
+      </div>
+
+    </div>
+    <div class="infobox infobox-tip">
+      <span class="infobox-icon">💡</span>
+      <span><strong style="color:var(--green)">Tip:</strong> The gesture engine tracks both hands independently at up to 60 FPS using MediaPipe on GPU. Ensure good lighting facing your hand for best detection accuracy. A green skeleton overlay confirms tracking is active.</span>
+    </div>
+  </div>
+
+  <!-- ── VOICE COMMANDS ────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--secondary)"></div>
+      Voice Commands — Groq AI Intelligence (Mic must be ON)
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:18px;">Speech is transcribed live into the input field. Commands are sent to <strong style="color:#fff">Groq LLaMA</strong> with full scene context — the AI understands object names, positions, and your environment.</p>
+
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"spawn a sphere to the left of the cube"</div>
+        <div class="voice-resp">→ AI calculates position relative to Cube.001 and spawns a sphere there</div>
+      </div>
+    </div>
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"delete the torus"</div>
+        <div class="voice-resp">→ AI identifies Torus.001 and removes it from the scene</div>
+      </div>
+    </div>
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"clear the scene" or "reset everything"</div>
+        <div class="voice-resp">→ All objects removed from viewport</div>
+      </div>
+    </div>
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"switch to infinite space"</div>
+        <div class="voice-resp">→ Space mode toggles to Infinite Space with orbit controls</div>
+      </div>
+    </div>
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"what objects are in the scene right now?"</div>
+        <div class="voice-resp">→ AI lists all objects, their types and current coordinates</div>
+      </div>
+    </div>
+    <div class="voice-example">
+      <span class="voice-icon">🎙️</span>
+      <div>
+        <div class="voice-cmd">"spawn a cone on top of the sphere"</div>
+        <div class="voice-resp">→ AI reads Sphere.001's Y position and places cone above it</div>
+      </div>
+    </div>
+    <div class="infobox infobox-warn">
+      <span class="infobox-icon">⚠️</span>
+      <span><strong style="color:var(--orange)">Note:</strong> Voice transcription appears live in the text input box as you speak. You can edit the text before pressing SEND, or just say your command fully and the system will auto-process it.</span>
+    </div>
+  </div>
+
+  <!-- ── TEXT COMMANDS ─────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--blue)"></div>
+      Text Command Reference (Type in bottom input)
+    </div>
+    <table class="cmd-table">
+      <thead>
+        <tr>
+          <th>Command / Example</th>
+          <th>What Happens</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="cmd-key">spawn a box</span></td>
+          <td class="cmd-result">Creates a pink cube at a random position in the scene</td>
+          <td><span class="cmd-type b-gesture">Spawn</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">spawn a sphere at 0 2 0</span></td>
+          <td class="cmd-result">Spawns sphere at world coordinates X=0, Y=2, Z=0</td>
+          <td><span class="cmd-type b-gesture">Spawn</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">add a cone</span> / <span class="cmd-key">add a torus</span></td>
+          <td class="cmd-result">Spawns the named primitive at a random position</td>
+          <td><span class="cmd-type b-gesture">Spawn</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">delete the torus</span></td>
+          <td class="cmd-result">AI resolves the object by name and removes it</td>
+          <td><span class="cmd-type b-voice">Delete</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">clear the scene</span></td>
+          <td class="cmd-result">All 3D objects removed from the viewport</td>
+          <td><span class="cmd-type b-voice">Scene</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">switch to room space</span></td>
+          <td class="cmd-result">Enables Room Space mode — grid at floor level, no orbit</td>
+          <td><span class="cmd-type b-ui">Mode</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">switch to infinite space</span></td>
+          <td class="cmd-result">Enables Infinite Mode — orbit controls, infinite grid</td>
+          <td><span class="cmd-type b-ui">Mode</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">what's in the scene?</span></td>
+          <td class="cmd-result">AI lists every object with name, type and current 3D position</td>
+          <td><span class="cmd-type" style="background:rgba(167,139,250,0.15);color:#a78bfa">Query</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">group all objects together</span></td>
+          <td class="cmd-result">AI repositions all objects close together in a cluster</td>
+          <td><span class="cmd-type" style="background:rgba(167,139,250,0.15);color:#a78bfa">AI</span></td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">spawn 3 spheres in a triangle</span></td>
+          <td class="cmd-result">AI calculates coordinates and spawns each at correct positions</td>
+          <td><span class="cmd-type" style="background:rgba(167,139,250,0.15);color:#a78bfa">AI</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── VIEWPORT QUICK CONTROLS ───────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--blue)"></div>
+      Viewport Quick Controls (top-right of 3D viewport)
+    </div>
+    <div class="cards">
+      <div class="card accent-green">
+        <span class="card-icon">📹</span>
+        <div class="card-title">CAM ON / OFF</div>
+        <div class="card-desc">Toggles the live webcam feed overlaid behind the 3D scene. Also activates real-time hand tracking via MediaPipe.</div>
+        <span class="card-badge b-active">Hardware</span>
+      </div>
+      <div class="card accent-blue">
+        <span class="card-icon">🌍</span>
+        <div class="card-title">SCAN ENV</div>
+        <div class="card-desc">Captures the current camera frame and sends it to Groq Vision AI to analyse your physical room — detects surfaces, objects and depth for spatial calibration.</div>
+        <span class="card-badge b-voice">Groq Vision</span>
+      </div>
+      <div class="card accent-primary">
+        <span class="card-icon">➕</span>
+        <div class="card-title">BOX / SPH / CON / TOR / CYL</div>
+        <div class="card-desc">One-click buttons to instantly spawn each primitive type (Box, Sphere, Cone, Torus, Cylinder) at a random position in the current scene.</div>
+        <span class="card-badge b-gesture">Quick Spawn</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM BAR ────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--orange)"></div>
+      Bottom Control Bar
+    </div>
+    <table class="cmd-table">
+      <thead>
+        <tr><th>Control</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="cmd-key">📹 Cam Button</span></td>
+          <td class="cmd-result">Toggle webcam on/off (green = active)</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">🌍 Scan Button</span></td>
+          <td class="cmd-result">Send webcam frame to Groq Vision for room analysis</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">Text Input</span></td>
+          <td class="cmd-result">Type any command or describe what to build — sent to Groq LLaMA-4</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">🔴 Mic Button</span></td>
+          <td class="cmd-result">Toggle microphone — live speech-to-text fills the input box in real time</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">➕ Plus Button</span></td>
+          <td class="cmd-result">Spawn a random box at a random position</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">🗑️ Trash Button</span></td>
+          <td class="cmd-result">Delete the currently selected object from the scene</td>
+        </tr>
+        <tr>
+          <td><span class="cmd-key">SEND / Enter</span></td>
+          <td class="cmd-result">Submit text input to Groq intelligence engine</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── SPACE MODES ───────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">
+      <div class="section-title-dot" style="background:var(--purple)"></div>
+      Space Modes (top bar toggle)
+    </div>
+    <div class="cards">
+      <div class="card accent-green">
+        <span class="card-icon">🏠</span>
+        <div class="card-title">Room Space</div>
+        <div class="card-desc">The 3D grid is positioned at estimated floor level. The camera FOV is locked to 60° matching your webcam, so virtual objects appear to sit in your physical room. No free orbit — the scene stays anchored to your environment.</div>
+        <span class="card-badge b-active">AR Mode</span>
+      </div>
+      <div class="card accent-primary">
+        <span class="card-icon">🌌</span>
+        <div class="card-title">Infinite Space</div>
+        <div class="card-desc">Orbit controls enabled — click &amp; drag to rotate the 3D viewport freely. The infinite grid extends in all directions. Use this for pure 3D modelling without the AR constraint.</div>
+        <span class="card-badge b-gesture">Blender Mode</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    OmniSense AI v4 · Built with <span>Three.js · React Three Fiber · MediaPipe · Groq LLaMA</span><br/>
+    Gesture Engine · Spatial AR · Multimodal Intelligence
+  </div>
+
+</div>
+</body>
+</html>

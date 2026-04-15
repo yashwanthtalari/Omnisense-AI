@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniSense AI - Control Manual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --bg-dark: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+            background-image: radial-gradient(circle at top right, #1e1e38 0%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+            color: #fff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .item-accent-pink { border-left-color: var(--secondary); }
+        .item-accent-green { border-left-color: #10b981; }
+
+        .item h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .item p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-planned { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>OmniSense AI Manual</h1>
+            <p class="subtitle">Complete reference guide for standard interface controls, voice commands, and spatial hand gestures.</p>
+        </header>
+
+        <!-- UI & Dashboard Controls -->
+        <div class="section-card">
+            <h2>💻 Dashboard Interface Controls</h2>
+            <div class="grid">
+                <div class="item">
+                    <span class="badge badge-active">Active</span>
+                    <h3>Toggle Camera (Video Icon)</h3>
+                    <p>Activates background camera feed to provide "vision" and environmental context to the AI.</p>
+                </div>
+                <div class="item">
+                    <span class="badge badge-active">Active</span>
+                    <h3>Toggle Microphone (Mic Icon)</h3>
+                    <p>Starts the continuous Speech-To-Text engine. The system will actively listen for commands.</p>
+                </div>
+                <div class="item">
+                    <span class="badge badge-active">Active</span>
+                    <h3>Spawn Object (+ Button)</h3>
+                    <p>Manually generates a random 3D primitive geometry into your current spatial view.</p>
+                </div>
+                <div class="item">
+                    <span class="badge badge-active">Active</span>
+                    <h3>Text Input</h3>
+                    <p>If voice input is unavailable, use the chat input box to send direct spatial commands.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Commands -->
+        <div class="section-card">
+            <h2>🎙️ Voice Commands</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Requires the Microphone to be actively toggled ON.</p>
+            <div class="grid">
+                <div class="item item-accent-pink">
+                    <span class="badge badge-active">Active</span>
+                    <h3>"Spawn a box" / "Spawn a cube"</h3>
+                    <p>Instantly generates a 3D box entity at a random nearby coordinate in space.</p>
+                </div>
+                <div class="item item-accent-pink">
+                    <span class="badge badge-active">Active</span>
+                    <h3>"Spawn a sphere" / "Spawn a ball"</h3>
+                    <p>Instantly generates an interactive 3D orb entity in your spatial environment.</p>
+                </div>
+                <div class="item item-accent-pink">
+                    <span class="badge badge-planned">Upcoming</span>
+                    <h3>"Delete that"</h3>
+                    <p>Instructs the AI to delete the object you are currently looking at or pointing to.</p>
+                </div>
+                <div class="item item-accent-pink">
+                    <span class="badge badge-planned">Upcoming</span>
+                    <h3>"Make it bigger"</h3>
+                    <p>Context-aware command to increase the scale of the nearest spatial object.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hand Gestures -->
+        <div class="section-card">
+            <h2>🖐️ Spatial Hand Gestures (WebXR)</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">The following gestures are mapped for the upcoming WebXR / Vision integration. Hand tracking must be enabled via device capabilities.</p>
+            <div class="grid">
+                <div class="item item-accent-green">
+                    <span class="badge badge-planned">Upcoming Phase 2</span>
+                    <h3>Pinch & Drag</h3>
+                    <p>Pinch your index finger and thumb over an object, then move your hand to reposition the object in 3D space.</p>
+                </div>
+                <div class="item item-accent-green">
+                    <span class="badge badge-planned">Upcoming Phase 2</span>
+                    <h3>Two-Handed Expand</h3>
+                    <p>Pinch opposite corners of an object with both hands and pull apart to uniformly scale up the object size.</p>
+                </div>
+                <div class="item item-accent-green">
+                    <span class="badge badge-planned">Upcoming Phase 2</span>
+                    <h3>Swipe Away</h3>
+                    <p>A fast sweeping motion over a 3D object to dismiss or delete it from the environment.</p>
+                </div>
+                <div class="item item-accent-green">
+                    <span class="badge badge-planned">Upcoming Phase 2</span>
+                    <h3>Open Palm (Halt)</h3>
+                    <p>Raise an open palm to the camera to pause all active AI listening and recording processes temporarily.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
