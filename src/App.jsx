@@ -23,11 +23,10 @@ import './index.css';
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
-const TEXT_MODEL   = 'llama-3.3-70b-versatile';           // fast + smart for commands
-const SCOUT_MODEL  = 'meta-llama/llama-4-scout-17b-16e-instruct'; // spatial reasoning
-const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'; // vision-capable
+const OLLAMA_URL   = import.meta.env.VITE_OLLAMA_URL || 'http://localhost:11434/v1/chat/completions';
+const TEXT_MODEL   = import.meta.env.VITE_TEXT_MODEL || 'llama3.1';
+const SCOUT_MODEL  = import.meta.env.VITE_TEXT_MODEL || 'llama3.1';
+const VISION_MODEL = import.meta.env.VITE_VISION_MODEL || 'llama3.2-vision';
 
 const WEBCAM_FOV      = 60;
 const SCALE_X         = 9;
@@ -128,30 +127,30 @@ function speak(text) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GROQ API
+// OLLAMA API
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function groqText(messages, model = TEXT_MODEL) {
-  const res = await fetch(GROQ_URL, {
+async function ollamaText(messages, model = TEXT_MODEL) {
+  const res = await fetch(OLLAMA_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: 768 })
   });
   if (!res.ok) {
     const errText = await res.text();
     // If primary model fails, fall back to fast model
-    if (model !== TEXT_MODEL) throw new Error(`Groq ${res.status}: ${errText}`);
-    console.warn('Primary model failed, falling back to llama-3.1-8b-instant');
-    return groqText(messages, 'llama-3.1-8b-instant');
+    if (model !== TEXT_MODEL) throw new Error(`Ollama ${res.status}: ${errText}`);
+    console.warn('Primary model failed, falling back to llama3.1');
+    return ollamaText(messages, 'llama3.1');
   }
   const d = await res.json();
   return d.choices[0].message.content;
 }
 
-async function groqVision(base64Image, prompt) {
-  const res = await fetch(GROQ_URL, {
+async function ollamaVision(base64Image, prompt) {
+  const res = await fetch(OLLAMA_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: VISION_MODEL,
       messages: [{
@@ -164,7 +163,7 @@ async function groqVision(base64Image, prompt) {
       max_tokens: 512
     })
   });
-  if (!res.ok) throw new Error(`Groq vision ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Ollama vision ${res.status}: ${await res.text()}`);
   const d = await res.json();
   return d.choices[0].message.content;
 }
@@ -487,7 +486,7 @@ export default function App() {
   const [loading,      setLoading]      = useState(false);
   const [envInfo,      setEnvInfo]      = useState('');          // Groq vision analysis
   const [logs, setLogs] = useState([
-    { sender: 'system', text: 'OmniSense v4 — Gesture Engine + Groq Intelligence Online', time: new Date() },
+    { sender: 'system', text: 'OmniSense v4 — Gesture Engine + Ollama Intelligence Online', time: new Date() },
     { sender: 'ai',     text: '📡 Gesture guide: ✋ OPEN PALM (Superman pose) → hover near shape to GRAB & MOVE it. Make a ✊ FIST to DROP. 🤏 PINCH to SELECT nearest. ✌️ PEACE to SPAWN shape at hand. 👊 FIST = delete selected.', time: new Date() },
   ]);
 
@@ -819,7 +818,7 @@ export default function App() {
     }
   }, [isMicOn, addLog]);
 
-  // ── Groq Intelligence ─────────────────────────────────────────────────────
+  // ── Ollama Intelligence ───────────────────────────────────────────────────
   const handleSubmit = useCallback(async (e) => {
     e?.preventDefault();
     if (!inputText.trim() || loading) return;
@@ -875,7 +874,7 @@ Rules:
 
     try {
       // Use Scout for spatial reasoning (it understands 3D positions natively)
-      const raw = await groqText([
+      const raw = await ollamaText([
         { role: 'system',    content: systemPrompt },
         { role: 'user',      content: userMsg }
       ], SCOUT_MODEL);
@@ -911,7 +910,7 @@ Rules:
         if (action.type === 'select')  setSelectedId(action.id);
       }
     } catch (e) {
-      addLog('system', `Groq error: ${e.message}`);
+      addLog('system', `Ollama error: ${e.message}`);
       // Local fallback
       const t = userMsg.toLowerCase();
       if      (t.includes('sphere') || t.includes('ball'))    spawnShape('sphere');
@@ -920,20 +919,20 @@ Rules:
       else if (t.includes('cone'))                            spawnShape('cone');
       else if (t.includes('cylinder'))                        spawnShape('cylinder');
       else if (t.includes('clear')  || t.includes('reset'))  clearScene();
-      else addLog('system', 'Groq unavailable, local parser used.');
+      else addLog('system', 'Ollama unavailable, local parser used.');
     } finally {
       setLoading(false);
     }
   }, [inputText, loading, spaceMode, envInfo, addLog, spawnShape, deleteShape, clearScene]);
 
-  // ── Environment Scan (Groq Vision) ────────────────────────────────────────
+  // ── Environment Scan (Ollama Vision) ────────────────────────────────────────
   const scanEnvironment = useCallback(async () => {
     if (!isCamOn || !videoRef.current) { addLog('system', 'Enable camera first.'); return; }
     setLoading(true);
-    addLog('system', 'Scanning environment with Groq Vision…');
+    addLog('system', 'Scanning environment with Ollama Vision…');
     try {
       const frame = captureVideoFrame(videoRef.current, 0.6);
-      const result = await groqVision(frame,
+      const result = await ollamaVision(frame,
         `Analyze this room/environment for an AR 3D workspace. Identify:
 1. Floor position/surface (estimate how far down)
 2. Major objects visible (desk, chair, walls, etc.)
@@ -950,99 +949,7 @@ Keep response to 3-4 sentences, focus on spatial layout.`
     }
   }, [isCamOn, addLog]);
 
-  // ── Live AI News Ticker — fires every 45s via Groq ─────────────────
-  const newsTickerRef = useRef(null);
-  useEffect(() => {
-    const NEWS_INTERVAL_MS = 45_000;
-    const usedHeadlines = [];
-    const fetchNews = async () => {
-      try {
-        const avoidList = usedHeadlines.slice(-5).join(', ');
-        const raw = await groqText([{
-          role: 'user',
-          content: `Give me ONE weirdly interesting or slightly humorous AI/tech news item from 2024-2025. 
-Format: "📰 [Reality Check]: <witty headline, bro-style> — <humorous 1-sentence commentary, like a tech-buddy would say it>"
-Max 180 chars. Real events only. Do NOT repeat: ${avoidList || 'none'}.`
-        }], TEXT_MODEL);
-        if (raw?.trim()) {
-          const cleaned = raw.trim().replace(/^["']+|["']+$/g, '');
-          usedHeadlines.push(cleaned.slice(0, 40));
-          setLogs(prev => [...prev, { sender: 'news', text: cleaned, time: new Date() }]);
-          // Read the news headline aloud (shortened)
-          const headline = cleaned.replace('📰 [Reality Check]: ', '').split('—')[0].trim();
-          speak(`Tech brief, Sir: ${headline}`);
-        }
-      } catch (_) { /* silent */ }
-    };
-    fetchNews();
-    newsTickerRef.current = setInterval(fetchNews, NEWS_INTERVAL_MS);
-    return () => clearInterval(newsTickerRef.current);
-  }, []);  // ── Proactive AI Commentary Loop — speaks every 90s while working ────
-  useEffect(() => {
-    const proactiveComments = [
-      "Everything looks good in the spatial matrix, Sir. Keep building.",
-      "Your scene is looking impressive, Sir. Want me to add anything?",
-      "Spatial engines are nominal, Sir. Try the peace sign to spawn near your hand.",
-      "I'm watching the scene, Sir. Say 'scan env' anytime to map your surroundings.",
-      "Tip, Sir: open your palm near any shape and hold it like Superman to grab it.",
-      "Remember Sir, you can ask me anything. 'Move the sphere to the left' — I've got it.",
-    ];
-    let ci = 0;
-    const timer = setInterval(() => {
-      speak(proactiveComments[ci % proactiveComments.length]);
-      addLog('ai', proactiveComments[ci % proactiveComments.length]);
-      ci++;
-    }, 90_000);
-    return () => clearInterval(timer);
-  }, [addLog]);
 
-  // ── Auto Environment Scan on Cam Start ────────────────────────────────
-  const envAutoScanned = useRef(false);
-  useEffect(() => {
-    if (!isCamOn || envAutoScanned.current) return;
-    const timer = setTimeout(async () => {
-      if (!videoRef.current || !isCamOn) return;
-      envAutoScanned.current = true;
-      addLog('system', 'Auto-scanning environment…');
-      speak('Scanning your surroundings, Sir. One moment.');
-      try {
-        const frame = captureVideoFrame(videoRef.current, 0.6);
-        const result = await groqVision(frame,
-          `You are analyzing a room for an AR 3D workspace. Identify the major real-world objects.
-For each detected object, output a JSON array of objects like:
-[{"label":"desk","position":[x,y,z],"type":"box"},{"label":"monitor","position":[x,y,z],"type":"box"},...]
-Estimate positions in a -5 to 5 range for x and y, -1 to -3 for z (depth). Only real large objects. Max 5 objects.
-Reply with ONLY the raw JSON array, no prose.`
-        );
-        setEnvInfo(`Room scanned — ${result.length > 80 ? result.slice(0,80) + '...' : result}`);
-        addLog('ai', `[Vision] Room scan complete.`);
-        // Attempt to parse and spawn ghost shapes for detected objects
-        try {
-          const clean = result.replace(/```json|```/gi, '').trim();
-          const match = clean.match(/\[[\s\S]*\]/);
-          const detected = JSON.parse(match ? match[0] : clean);
-          if (Array.isArray(detected)) {
-            detected.slice(0, 5).forEach((obj, i) => {
-              const shapeType = obj.type || 'box';
-              const pos = Array.isArray(obj.position) ? obj.position : [i * 1.5 - 3, -1, -2];
-              const id = Date.now() + i;
-              const color = '#4b5563';
-              const name = `Env.${obj.label || 'obj'}`;
-              posMap.current[id] = { target: new THREE.Vector3(...pos), current: new THREE.Vector3(...pos) };
-              setShapes(prev => [...prev, { id, type: shapeType, color, name, position: pos }]);
-              addLog('system', `[ENV] Mapped: ${name} as ${shapeType}`);
-            });
-            speak(`I can see ${detected.length} objects in your environment, Sir. I have mapped them in the 3D space.`);
-          }
-        } catch (_) {
-          speak('Room scan done, Sir. No structured objects detected to map.');
-        }
-      } catch (e) {
-        addLog('system', `Auto-scan failed: ${e.message}`);
-      }
-    }, 3500); // Wait 3.5s for cam to stabilize
-    return () => clearTimeout(timer);
-  }, [isCamOn, addLog]);
 
   // ── Derived for UI ────────────────────────────────────────────────────────
   const selectedShape = shapes.find(s => s.id === selectedId);
@@ -1093,9 +1000,9 @@ Reply with ONLY the raw JSON array, no prose.`
         <div className="topbar-status-pill">
           <div className={`status-dot ${isMicOn ? 'listening' : isCamOn ? 'online' : ''}`} />
           {isMicOn ? 'LISTENING' : isCamOn ? 'CAM ACTIVE' : 'STANDBY'}
-          {loading && <><div className="topbar-divider" /><Loader size={10} style={{ animation: 'spin 1s linear infinite' }} /> GROQ THINKING</>}
+          {loading && <><div className="topbar-divider" /><Loader size={10} style={{ animation: 'spin 1s linear infinite' }} /> OLLAMA THINKING</>}
           <div className="topbar-divider" />
-          <Cpu size={10} /> GROQ LLaMA-3 · MEDIAPIPE
+          <Cpu size={10} /> OLLAMA · MEDIAPIPE
         </div>
       </header>
 
@@ -1207,7 +1114,7 @@ Reply with ONLY the raw JSON array, no prose.`
           <div className="panel-section-title"><span>Telemetry</span></div>
           <div className="prop-row"><span className="prop-label">FPS</span><span className={`prop-value ${fps > 24 ? 'green' : fps > 12 ? 'orange' : 'red'}`}>{fps}</span></div>
           <div className="prop-row"><span className="prop-label">Mode</span><span className="prop-value blue">{spaceMode.toUpperCase()}</span></div>
-          <div className="prop-row"><span className="prop-label">AI</span><span className="prop-value green">GROQ LLaMA-3</span></div>
+          <div className="prop-row"><span className="prop-label">AI</span><span className="prop-value green">OLLAMA</span></div>
         </div>
       </aside>
 
@@ -1220,7 +1127,7 @@ Reply with ONLY the raw JSON array, no prose.`
             autoPlay playsInline muted
             style={{
               position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', opacity: 0.5,
+              objectFit: 'cover', opacity: 0.85,
               transform: 'scaleX(-1)', zIndex: 1
             }}
           />
@@ -1280,7 +1187,7 @@ Reply with ONLY the raw JSON array, no prose.`
 
       {/* ══ RIGHT PANEL ═══════════════════════════════════════════════════════ */}
       <aside className="panel-right">
-        <div className="panel-header"><Terminal size={12} className="panel-header-icon" /> AI Console · Groq LLaMA-3</div>
+        <div className="panel-header"><Terminal size={12} className="panel-header-icon" /> AI Console · Ollama Local</div>
         <div className="log-scroll" ref={logScrollRef}>
           <AnimatePresence initial={false}>
             {logs.map((log, i) => (
@@ -1300,7 +1207,7 @@ Reply with ONLY the raw JSON array, no prose.`
           </AnimatePresence>
           {loading && (
             <div className="log-entry system" style={{ color: 'var(--primary)' }}>
-              <div className="log-sender">GROQ</div>
+              <div className="log-sender">OLLAMA</div>
               Thinking…
             </div>
           )}
@@ -1328,7 +1235,7 @@ Reply with ONLY the raw JSON array, no prose.`
         <div className="input-section">
           <form onSubmit={handleSubmit} style={{ display:'flex', flex:1, gap:8, alignItems:'center' }}>
             <span style={{ fontFamily:'var(--mono)', fontSize:10, color: isMicOn ? 'var(--secondary)' : 'var(--text-muted)', whiteSpace:'nowrap' }}>
-              {isMicOn ? '🔴 VOICE →' : 'GROQ ›'}
+              {isMicOn ? '🔴 VOICE →' : 'OLLAMA ›'}
             </span>
             <input
               className={`main-input${isMicOn ? ' mic-active' : ''}`}
@@ -1336,7 +1243,7 @@ Reply with ONLY the raw JSON array, no prose.`
               value={inputText}
               onChange={e => setInputText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit(e)}
-              placeholder={isMicOn ? 'Listening… speak your command' : 'Ask Groq AI or describe what to build…'}
+              placeholder={isMicOn ? 'Listening… speak your command' : 'Ask Ollama AI or describe what to build…'}
               disabled={loading}
             />
             <button type="submit" className="send-btn" disabled={loading}>
