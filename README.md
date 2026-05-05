@@ -20,7 +20,7 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/yashwanthtalari/Omnisense-AI.git
-cd multi
+cd Omnisense-AI
 ```
 
 ### 2. Install Dependencies
@@ -44,10 +44,13 @@ VITE_VISION_MODEL=llama3.2-vision
 ```
 
 ### 5. Run the Application
+Start the development server:
 ```bash
 npm run dev
+# OR
+npm start
 ```
-Once started, open `http://localhost:5173` in your browser.
+Once started, the application will be available at [http://localhost:5173](http://localhost:5173).
 
 ---
 
